@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 function generateUID() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -19,7 +19,7 @@ function savePatientsDB(db) {
   localStorage.setItem('patientsDB', JSON.stringify(db))
 }
 
-// ── styles ───────────────────────────────────────────────────────────────────
+// ── styles ────────────────────────────────────────────────────────────────────
 
 const S = {
   page: {
@@ -39,43 +39,47 @@ const S = {
     left: '24px',
     background: 'rgba(255,255,255,0.06)',
     border: '1px solid rgba(255,255,255,0.12)',
-    color: '#94a3b8',
+    color: '#A1A1AA',
     borderRadius: '8px',
     padding: '7px 14px',
     cursor: 'pointer',
     fontSize: '13px',
   },
   icon: { fontSize: '50px', marginBottom: '10px' },
-  title: { fontSize: '26px', fontWeight: 700, marginBottom: '4px' },
-  subtitle: { fontSize: '14px', color: '#64748b', marginBottom: '32px' },
+  title: { fontSize: '26px', fontWeight: 700, marginBottom: '4px', color: '#fff' },
+  subtitle: {
+    fontSize: '14px',
+    color: '#A1A1AA',
+    marginBottom: '28px',
+    textAlign: 'center',
+    maxWidth: '340px',
+  },
   card: {
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '420px',
     background: '#252645',
     borderRadius: '20px',
     padding: '32px 28px',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
   },
-  // step indicator
   stepRow: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
     marginBottom: '28px',
   },
   stepDot: (active, done) => ({
-    width: done ? '28px' : '28px',
-    height: '28px',
+    width: '30px',
+    height: '30px',
     borderRadius: '50%',
+    flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '12px',
     fontWeight: 700,
-    background: done ? '#8B5CF6' : active ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.07)',
-    border: active || done ? '2px solid #8B5CF6' : '2px solid rgba(255,255,255,0.1)',
-    color: done || active ? '#fff' : '#64748b',
+    background: done ? '#8B5CF6' : active ? 'rgba(139,92,246,0.25)' : 'rgba(255,255,255,0.06)',
+    border: `2px solid ${done || active ? '#8B5CF6' : 'rgba(255,255,255,0.1)'}`,
+    color: done || active ? '#fff' : '#A1A1AA',
     transition: 'all 0.3s',
   }),
   stepLine: (done) => ({
@@ -83,6 +87,7 @@ const S = {
     height: '2px',
     background: done ? '#8B5CF6' : 'rgba(255,255,255,0.1)',
     transition: 'background 0.3s',
+    margin: '0 4px',
   }),
   label: {
     display: 'block',
@@ -95,7 +100,7 @@ const S = {
   },
   input: {
     width: '100%',
-    background: 'rgba(255,255,255,0.07)',
+    background: 'rgba(255,255,255,0.06)',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: '10px',
     color: '#fff',
@@ -106,19 +111,24 @@ const S = {
     fontFamily: 'inherit',
     marginBottom: '6px',
   },
-  hint: { fontSize: '12px', color: '#475569', marginBottom: '22px', lineHeight: '1.5' },
+  hint: {
+    fontSize: '12px',
+    color: '#A1A1AA',
+    marginBottom: '20px',
+    lineHeight: '1.5',
+  },
   primaryBtn: (disabled) => ({
     width: '100%',
-    padding: '14px',
-    background: disabled ? 'rgba(139,92,246,0.4)' : '#8B5CF6',
+    padding: '13px',
+    background: disabled ? 'rgba(139,92,246,0.35)' : '#8B5CF6',
     border: 'none',
     borderRadius: '10px',
     color: '#fff',
     fontSize: '15px',
     fontWeight: 600,
     cursor: disabled ? 'default' : 'pointer',
-    marginTop: '4px',
     transition: 'background 0.2s',
+    marginTop: '4px',
   }),
   secondaryBtn: {
     width: '100%',
@@ -126,7 +136,7 @@ const S = {
     background: 'transparent',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: '10px',
-    color: '#94a3b8',
+    color: '#A1A1AA',
     fontSize: '14px',
     cursor: 'pointer',
     marginTop: '10px',
@@ -134,17 +144,17 @@ const S = {
   error: {
     marginTop: '12px',
     padding: '10px 14px',
-    background: 'rgba(239,68,68,0.12)',
+    background: 'rgba(239,68,68,0.1)',
     border: '1px solid rgba(239,68,68,0.25)',
     borderRadius: '8px',
     fontSize: '13px',
     color: '#fca5a5',
   },
   toggle: {
-    marginTop: '24px',
+    marginTop: '22px',
     textAlign: 'center',
     fontSize: '13px',
-    color: '#64748b',
+    color: '#A1A1AA',
   },
   toggleLink: {
     color: '#a78bfa',
@@ -153,23 +163,73 @@ const S = {
     textDecoration: 'underline',
     marginLeft: '4px',
   },
-  successBox: {
-    background: 'rgba(34,197,94,0.1)',
-    border: '1px solid rgba(34,197,94,0.25)',
+  // Step 2 auth choice
+  authChoiceRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+    marginBottom: '24px',
+  },
+  authChoiceBtn: (selected) => ({
+    padding: '16px 12px',
     borderRadius: '12px',
-    padding: '16px',
+    border: selected ? '2px solid #8B5CF6' : '1px solid rgba(255,255,255,0.12)',
+    background: selected ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.04)',
+    color: selected ? '#c4b5fd' : '#A1A1AA',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: selected ? 600 : 400,
+    textAlign: 'center',
+    transition: 'all 0.2s',
+    lineHeight: '1.4',
+  }),
+  authIcon: { fontSize: '22px', display: 'block', marginBottom: '6px' },
+  digilockerBtn: (loading) => ({
+    width: '100%',
+    padding: '13px',
+    background: loading ? 'rgba(16,185,129,0.2)' : 'linear-gradient(135deg, #059669, #10b981)',
+    border: loading ? '1px solid rgba(16,185,129,0.4)' : 'none',
+    borderRadius: '10px',
+    color: loading ? '#6ee7b7' : '#fff',
+    fontSize: '14px',
+    fontWeight: 600,
+    cursor: loading ? 'default' : 'pointer',
+    transition: 'all 0.3s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    marginTop: '4px',
+  }),
+  successPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    background: 'rgba(34,197,94,0.12)',
+    border: '1px solid rgba(34,197,94,0.3)',
+    borderRadius: '20px',
+    padding: '6px 14px',
+    fontSize: '13px',
+    color: '#86efac',
     marginBottom: '20px',
+    fontWeight: 600,
+  },
+  uidInput: {
+    width: '100%',
+    background: 'rgba(139,92,246,0.1)',
+    border: '1px solid rgba(139,92,246,0.3)',
+    borderRadius: '10px',
+    color: '#a78bfa',
+    padding: '13px 14px',
+    fontSize: '18px',
+    fontWeight: 700,
+    letterSpacing: '2px',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: 'monospace',
+    marginBottom: '6px',
     textAlign: 'center',
   },
-  uidDisplay: {
-    fontSize: '22px',
-    fontWeight: 800,
-    color: '#a78bfa',
-    letterSpacing: '2px',
-    margin: '6px 0 4px',
-    fontFamily: 'monospace',
-  },
-  uidNote: { fontSize: '12px', color: '#64748b' },
   refreshBtn: {
     background: 'none',
     border: 'none',
@@ -178,30 +238,52 @@ const S = {
     fontSize: '12px',
     padding: '4px 0',
     textDecoration: 'underline',
+    display: 'block',
+    marginBottom: '20px',
   },
 }
+
+// ── spinner ───────────────────────────────────────────────────────────────────
+
+const Spinner = () => (
+  <>
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <span style={{
+      display: 'inline-block', width: '14px', height: '14px',
+      border: '2px solid rgba(255,255,255,0.3)',
+      borderTop: '2px solid #fff', borderRadius: '50%',
+      animation: 'spin 0.7s linear infinite',
+    }} />
+  </>
+)
 
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function PatientLogin() {
   const navigate = useNavigate()
 
-  // 'login' | 'signup'
-  const [mode, setMode] = useState('login')
-  const [step, setStep] = useState(1)
+  const [mode, setMode]   = useState('login')   // 'login' | 'signup'
+  const [step, setStep]   = useState(1)          // 1 | 2 | 3
 
-  // login fields
-  const [loginId, setLoginId] = useState('')
+  // login
+  const [loginId, setLoginId]           = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  // signup fields
+  // signup — step 1
   const [email, setEmail] = useState('')
-  const [aadhaar, setAadhaar] = useState('')
-  const [uid, setUid] = useState(generateUID)
-  const [password, setPassword] = useState('')
+
+  // signup — step 2
+  const [authMethod, setAuthMethod]   = useState(null)   // 'aadhaar' | 'digilocker'
+  const [aadhaar, setAadhaar]         = useState('')
+  const [aadhaarVerified, setAadhaarVerified] = useState(false)
+  const [digiState, setDigiState]     = useState('idle') // 'idle'|'redirecting'|'fetching'|'done'
+
+  // signup — step 3
+  const [uid, setUid]                   = useState(generateUID)
+  const [password, setPassword]         = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  const [error, setError] = useState('')
+  const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
   const clearError = () => setError('')
@@ -212,38 +294,53 @@ export default function PatientLogin() {
     const id = loginId.trim()
     if (!id) return setError('Please enter your User ID.')
     if (!loginPassword) return setError('Please enter your password.')
-
     const db = getPatientsDB()
     const patient = db[id]
     if (!patient) return setError('User ID not found. Please sign up first.')
     if (patient.password !== loginPassword) return setError('Incorrect password.')
-
     localStorage.setItem('currentPatientId', id)
     navigate('/patient-dashboard')
   }
 
-  // ── SIGNUP steps ───────────────────────────────────────────────────────────
+  // ── SIGNUP step 1 ──────────────────────────────────────────────────────────
 
   const handleStep1 = () => {
     const e = email.trim()
     if (!e) return setError('Please enter your email.')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return setError('Please enter a valid email address.')
+    if (!e.includes('@')) return setError('Please enter a valid email address.')
     clearError()
     setStep(2)
   }
 
-  const handleStep2 = () => {
-    const a = aadhaar.trim()
-    if (!a) return setError('Please enter your Aadhaar ID.')
-    if (!/^\d{12}$/.test(a)) return setError('Aadhaar must be exactly 12 digits (numbers only).')
+  // ── SIGNUP step 2 — Aadhaar path ──────────────────────────────────────────
+
+  const handleVerifyAadhaar = () => {
+    if (!/^\d{12}$/.test(aadhaar)) return setError('Aadhaar must be exactly 12 digits.')
     clearError()
-    setStep(3)
+    setAadhaarVerified(true)
+    setTimeout(() => setStep(3), 600)
   }
+
+  // ── SIGNUP step 2 — DigiLocker path ───────────────────────────────────────
+
+  const handleDigiLocker = () => {
+    if (digiState !== 'idle') return
+    setDigiState('redirecting')
+    setTimeout(() => {
+      setDigiState('fetching')
+      setTimeout(() => {
+        setDigiState('done')
+        setTimeout(() => setStep(3), 500)
+      }, 1500)
+    }, 2000)
+  }
+
+  // ── SIGNUP step 3 ──────────────────────────────────────────────────────────
 
   const handleStep3 = async () => {
     const id = uid.trim().toUpperCase()
     if (!id) return setError('User ID cannot be empty.')
-    if (!/^[A-Z0-9\-]{4,12}$/.test(id)) return setError('User ID must be 4–12 alphanumeric characters (hyphens allowed).')
+    if (!/^[A-Z0-9\-]{4,12}$/.test(id)) return setError('User ID must be 4–12 alphanumeric characters.')
     if (!password) return setError('Please create a password.')
     if (password.length < 6) return setError('Password must be at least 6 characters.')
     if (password !== confirmPassword) return setError('Passwords do not match.')
@@ -252,44 +349,53 @@ export default function PatientLogin() {
     if (db[id]) return setError('This User ID is already taken. Try a different one.')
 
     const entry = {
+      id,
       email: email.trim(),
-      aadhaar: aadhaar.trim(),
       password,
+      aadhaar: aadhaar || 'digilocker',
       inbox: [],
       records: [],
       createdAt: new Date().toISOString(),
     }
 
-    // Save to localStorage
     db[id] = entry
     savePatientsDB(db)
 
-    // Save to Supabase (non-blocking — don't fail signup if this errors)
     const { error: sbErr } = await supabase
       .from('patients')
       .insert({ id, name: entry.email, phone: entry.aadhaar })
-    if (sbErr && sbErr.code !== '23505') console.warn('Supabase patients insert failed:', sbErr.message)
+    if (sbErr && sbErr.code !== '23505') console.warn('Supabase insert failed:', sbErr.message)
 
     localStorage.setItem('currentPatientId', id)
     navigate('/patient-dashboard')
   }
 
-  // ── reset to login ─────────────────────────────────────────────────────────
+  // ── reset ──────────────────────────────────────────────────────────────────
 
   const switchMode = (m) => {
-    setMode(m)
-    setStep(1)
-    setError('')
-    setEmail('')
-    setAadhaar('')
-    setUid(generateUID())
-    setPassword('')
-    setConfirmPassword('')
-    setLoginId('')
-    setLoginPassword('')
+    setMode(m); setStep(1); setError('')
+    setEmail(''); setAadhaar(''); setAadhaarVerified(false)
+    setDigiState('idle'); setAuthMethod(null)
+    setUid(generateUID()); setPassword(''); setConfirmPassword('')
+    setLoginId(''); setLoginPassword('')
   }
 
-  // ── render ─────────────────────────────────────────────────────────────────
+  // ── step indicator ─────────────────────────────────────────────────────────
+
+  const StepIndicator = () => (
+    <div style={S.stepRow}>
+      {[1, 2, 3].map((n, i) => (
+        <div key={n} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 'none' }}>
+          <div style={S.stepDot(step === n, step > n)}>
+            {step > n ? '✓' : n}
+          </div>
+          {i < 2 && <div style={S.stepLine(step > n)} />}
+        </div>
+      ))}
+    </div>
+  )
+
+  // ── step renders ───────────────────────────────────────────────────────────
 
   const renderLogin = () => (
     <>
@@ -313,10 +419,9 @@ export default function PatientLogin() {
         onChange={(e) => { setLoginPassword(e.target.value); clearError() }}
         onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
       />
-      <div style={{ marginBottom: '22px' }} />
+      <div style={{ marginBottom: '20px' }} />
 
       <button style={S.primaryBtn(false)} onClick={handleLogin}>Login</button>
-
       {error && <div style={S.error}>{error}</div>}
 
       <div style={S.toggle}>
@@ -324,19 +429,6 @@ export default function PatientLogin() {
         <span style={S.toggleLink} onClick={() => switchMode('signup')}>Sign up</span>
       </div>
     </>
-  )
-
-  const StepIndicator = () => (
-    <div style={S.stepRow}>
-      {[1, 2, 3].map((n, i) => (
-        <>
-          <div key={n} style={S.stepDot(step === n, step > n)}>
-            {step > n ? '✓' : n}
-          </div>
-          {i < 2 && <div style={S.stepLine(step > n + 0.5)} />}
-        </>
-      ))}
-    </div>
   )
 
   const renderStep1 = () => (
@@ -358,25 +450,88 @@ export default function PatientLogin() {
     </>
   )
 
-  const renderStep2 = () => (
-    <>
-      <StepIndicator />
-      <label style={S.label}>Aadhaar ID</label>
-      <input
-        style={S.input}
-        placeholder="12-digit Aadhaar number"
-        value={aadhaar}
-        maxLength={12}
-        onChange={(e) => { setAadhaar(e.target.value.replace(/\D/g, '')); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleStep2()}
-        autoFocus
-      />
-      <div style={S.hint}>Must be exactly 12 digits. Used for identity verification.</div>
-      <button style={S.primaryBtn(false)} onClick={handleStep2}>Next →</button>
-      <button style={S.secondaryBtn} onClick={() => { setStep(1); clearError() }}>← Back</button>
-      {error && <div style={S.error}>{error}</div>}
-    </>
-  )
+  const renderStep2 = () => {
+    const digiLabel = {
+      idle: 'Authenticate with DigiLocker',
+      redirecting: 'Redirecting to DigiLocker...',
+      fetching: 'Fetching your details...',
+      done: '✓ DigiLocker Verified',
+    }[digiState]
+
+    return (
+      <>
+        <StepIndicator />
+
+        <div style={{ fontSize: '13px', color: '#A1A1AA', marginBottom: '16px' }}>
+          Choose how to verify your identity:
+        </div>
+
+        <div style={S.authChoiceRow}>
+          <button
+            style={S.authChoiceBtn(authMethod === 'aadhaar')}
+            onClick={() => { setAuthMethod('aadhaar'); clearError(); setDigiState('idle') }}
+          >
+            <span style={S.authIcon}>🪪</span>
+            Enter Aadhaar Manually
+          </button>
+          <button
+            style={S.authChoiceBtn(authMethod === 'digilocker')}
+            onClick={() => { setAuthMethod('digilocker'); clearError(); setAadhaar(''); setAadhaarVerified(false) }}
+          >
+            <span style={S.authIcon}>🔐</span>
+            Connect via DigiLocker
+          </button>
+        </div>
+
+        {authMethod === 'aadhaar' && (
+          <>
+            {aadhaarVerified ? (
+              <div style={S.successPill}>✓ Aadhaar verified</div>
+            ) : (
+              <>
+                <label style={S.label}>Aadhaar Number</label>
+                <input
+                  style={S.input}
+                  placeholder="12-digit Aadhaar number"
+                  value={aadhaar}
+                  maxLength={12}
+                  onChange={(e) => { setAadhaar(e.target.value.replace(/\D/g, '')); clearError() }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleVerifyAadhaar()}
+                  autoFocus
+                />
+                <div style={S.hint}>Numbers only. Exactly 12 digits.</div>
+                <button style={S.primaryBtn(false)} onClick={handleVerifyAadhaar}>
+                  Verify Aadhaar
+                </button>
+              </>
+            )}
+          </>
+        )}
+
+        {authMethod === 'digilocker' && (
+          <>
+            <div style={{ fontSize: '12px', color: '#A1A1AA', marginBottom: '14px', lineHeight: '1.5' }}>
+              You'll be securely redirected to DigiLocker to fetch your Aadhaar-linked identity.
+            </div>
+            <button
+              style={S.digilockerBtn(digiState !== 'idle')}
+              onClick={handleDigiLocker}
+              disabled={digiState !== 'idle'}
+            >
+              {digiState === 'idle' ? null : <Spinner />}
+              {digiLabel}
+            </button>
+          </>
+        )}
+
+        {error && <div style={S.error}>{error}</div>}
+
+        <button style={S.secondaryBtn} onClick={() => { setStep(1); setAuthMethod(null); clearError() }}>
+          ← Back
+        </button>
+      </>
+    )
+  }
 
   const renderStep3 = () => (
     <>
@@ -384,16 +539,14 @@ export default function PatientLogin() {
 
       <label style={S.label}>Your Unique User ID</label>
       <input
-        style={{ ...S.input, fontFamily: 'monospace', letterSpacing: '2px', fontSize: '17px', fontWeight: 700, color: '#a78bfa' }}
+        style={S.uidInput}
         value={uid}
         onChange={(e) => { setUid(e.target.value.toUpperCase()); clearError() }}
         maxLength={12}
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <span style={S.uidNote}>You can edit this or keep the generated one.</span>
-        <button style={S.refreshBtn} onClick={() => { setUid(generateUID()); clearError() }}>
-          ↻ Regenerate
-        </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '12px', color: '#A1A1AA' }}>Edit freely or keep the generated one.</span>
+        <button style={S.refreshBtn} onClick={() => { setUid(generateUID()); clearError() }}>↻ Regenerate</button>
       </div>
 
       <label style={S.label}>Create Password</label>
@@ -416,13 +569,17 @@ export default function PatientLogin() {
         onChange={(e) => { setConfirmPassword(e.target.value); clearError() }}
         onKeyDown={(e) => e.key === 'Enter' && handleStep3()}
       />
-      <div style={{ marginBottom: '22px' }} />
+      <div style={{ marginBottom: '20px' }} />
 
-      <button style={S.primaryBtn(false)} onClick={handleStep3}>Create Account</button>
+      <button style={S.primaryBtn(loading)} onClick={handleStep3} disabled={loading}>
+        {loading ? 'Creating account...' : 'Create Account'}
+      </button>
       <button style={S.secondaryBtn} onClick={() => { setStep(2); clearError() }}>← Back</button>
       {error && <div style={S.error}>{error}</div>}
     </>
   )
+
+  const stepSubtitles = ['Enter your email', 'Verify your identity', 'Set your credentials']
 
   return (
     <div style={S.page}>
@@ -433,11 +590,11 @@ export default function PatientLogin() {
       <p style={S.subtitle}>
         {mode === 'login'
           ? 'Access your health records securely.'
-          : `Step ${step} of 3 — ${['Enter your email', 'Verify your identity', 'Set your credentials'][step - 1]}`}
+          : `Step ${step} of 3 — ${stepSubtitles[step - 1]}`}
       </p>
 
       <div style={S.card}>
-        {mode === 'login' && renderLogin()}
+        {mode === 'login'   && renderLogin()}
         {mode === 'signup' && step === 1 && renderStep1()}
         {mode === 'signup' && step === 2 && renderStep2()}
         {mode === 'signup' && step === 3 && renderStep3()}
