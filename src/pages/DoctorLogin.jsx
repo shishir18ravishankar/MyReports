@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -246,7 +247,7 @@ export default function DoctorLogin() {
     setStep(4)
   }
 
-  const handleStep4 = () => {
+  const handleStep4 = async () => {
     const id = doctorId.trim().toUpperCase()
     if (!id) return setError('Doctor ID cannot be empty.')
     if (!/^[A-Z0-9\-]{4,12}$/.test(id)) return setError('Doctor ID must be 4–12 alphanumeric characters (hyphens allowed).')
@@ -257,10 +258,11 @@ export default function DoctorLogin() {
     const db = getDoctorsDB()
     if (db[id]) return setError('This Doctor ID is already taken. Try a different one.')
 
-    db[id] = {
+    const mci = mciNumber.trim().toUpperCase()
+    const entry = {
       email: email.trim(),
       aadhaar: aadhaar.trim(),
-      mciNumber: mciNumber.trim().toUpperCase(),
+      mciNumber: mci,
       doctorId: id,
       password,
       name: '',
@@ -269,7 +271,16 @@ export default function DoctorLogin() {
       verified: false,
       createdAt: new Date().toISOString(),
     }
+
+    // Save to localStorage
+    db[id] = entry
     saveDoctorsDB(db)
+
+    // Save to Supabase (non-blocking — don't fail signup if this errors)
+    const { error: sbErr } = await supabase
+      .from('doctors')
+      .insert({ id, name: entry.email, clinic: 'Clinic', mci: mci })
+    if (sbErr && sbErr.code !== '23505') console.warn('Supabase doctors insert failed:', sbErr.message)
 
     localStorage.setItem('currentDoctorId', id)
     navigate('/doctor-dashboard')

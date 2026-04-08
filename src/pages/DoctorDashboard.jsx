@@ -161,7 +161,6 @@ const styles = {
 export default function DoctorDashboard() {
   const navigate = useNavigate()
   const doctorId = localStorage.getItem('currentDoctorId')
-  const doctorMci = localStorage.getItem('currentDoctorMci') || 'Doctor'
 
   const [patientId, setPatientId] = useState('')
   const [reportContent, setReportContent] = useState('')
@@ -219,7 +218,6 @@ export default function DoctorDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('currentDoctorId')
-    localStorage.removeItem('currentDoctorMci')
     navigate('/')
   }
 
@@ -228,7 +226,7 @@ export default function DoctorDashboard() {
       <nav style={styles.nav}>
         <span style={styles.navBrand}>MyReports</span>
         <div style={styles.navRight}>
-          <span style={styles.doctorBadge}>MCI: {doctorMci}</span>
+          <span style={styles.doctorBadge}>{doctorId}</span>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </nav>

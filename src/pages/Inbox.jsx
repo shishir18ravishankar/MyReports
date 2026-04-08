@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 const TYPE_COLORS = {
-  'Blood Test': { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', text: '#fca5a5', dot: '#ef4444' },
-  'Scan':       { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', text: '#93c5fd', dot: '#3b82f6' },
+  'Blood Test':   { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', text: '#fca5a5', dot: '#ef4444' },
+  'Scan':         { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', text: '#93c5fd', dot: '#3b82f6' },
   'Prescription': { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.25)', text: '#86efac', dot: '#22c55e' },
-  'Other':      { bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.25)', text: '#d8b4fe', dot: '#a855f7' },
+  'Other':        { bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.25)', text: '#d8b4fe', dot: '#a855f7' },
 }
 
 const styles = {
@@ -87,7 +88,6 @@ const styles = {
     padding: '22px 24px',
     marginBottom: '14px',
     backdropFilter: 'blur(12px)',
-    transition: 'transform 0.2s',
   },
   cardTop: {
     display: 'flex',
@@ -154,34 +154,26 @@ export default function Inbox() {
   const navigate = useNavigate()
   const patientId = localStorage.getItem('currentPatientId')
 
-  const loadInbox = () => {
-    try {
-      return JSON.parse(localStorage.getItem(`inbox_${patientId}`)) || []
-    } catch {
-      return []
-    }
-  }
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [reports, setReports] = useState(loadInbox)
+  useEffect(() => {
+    if (!patientId) return
+    supabase
+      .from('reports')
+      .select('*')
+      .eq('patient_id', patientId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setReports(data)
+        setLoading(false)
+      })
+  }, [patientId])
 
-  const saveInbox = (updated) => {
-    localStorage.setItem(`inbox_${patientId}`, JSON.stringify(updated))
-    setReports(updated)
-  }
-
-  const handleAccept = (report) => {
-    // Move to records
-    const recordsKey = `records_${patientId}`
-    const records = JSON.parse(localStorage.getItem(recordsKey) || '[]')
-    records.push({ ...report, acceptedAt: new Date().toISOString() })
-    localStorage.setItem(recordsKey, JSON.stringify(records))
-
-    // Remove from inbox
-    saveInbox(reports.filter((r) => r.id !== report.id))
-  }
-
-  const handleDiscard = (id) => {
-    saveInbox(reports.filter((r) => r.id !== id))
+  const updateStatus = async (id, status) => {
+    await supabase.from('reports').update({ status }).eq('id', id)
+    setReports((prev) => prev.filter((r) => r.id !== id))
   }
 
   const handleLogout = () => {
@@ -195,15 +187,9 @@ export default function Inbox() {
         <span style={styles.navBrand}>MyReports</span>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={styles.navLinks}>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>
-              Dashboard
-            </button>
-            <button style={styles.navBtn(true)} onClick={() => navigate('/inbox')}>
-              Inbox
-            </button>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/my-records')}>
-              My Records
-            </button>
+            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
+            <button style={styles.navBtn(true)} onClick={() => navigate('/inbox')}>Inbox</button>
+            <button style={styles.navBtn(false)} onClick={() => navigate('/my-records')}>My Records</button>
           </div>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
@@ -217,7 +203,11 @@ export default function Inbox() {
           )}
         </div>
 
-        {reports.length === 0 ? (
+        {loading ? (
+          <div style={styles.emptyState}>
+            <div style={{ fontSize: '14px', color: '#475569' }}>Loading...</div>
+          </div>
+        ) : reports.length === 0 ? (
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>📭</div>
             <div style={styles.emptyText}>Your inbox is empty</div>
@@ -233,7 +223,7 @@ export default function Inbox() {
                     {report.type}
                   </span>
                   <div style={styles.meta}>
-                    From Dr. {report.doctorId} &nbsp;·&nbsp; {new Date(report.date).toLocaleString()}
+                    From Dr. {report.doctor_id} &nbsp;·&nbsp; {new Date(report.created_at).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -241,10 +231,10 @@ export default function Inbox() {
               <div style={styles.content}>{report.content}</div>
 
               <div style={styles.actions}>
-                <button style={styles.acceptBtn} onClick={() => handleAccept(report)}>
+                <button style={styles.acceptBtn} onClick={() => updateStatus(report.id, 'accepted')}>
                   Accept & Save
                 </button>
-                <button style={styles.discardBtn} onClick={() => handleDiscard(report.id)}>
+                <button style={styles.discardBtn} onClick={() => updateStatus(report.id, 'discarded')}>
                   Discard
                 </button>
               </div>

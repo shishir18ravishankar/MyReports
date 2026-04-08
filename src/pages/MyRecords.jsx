@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
@@ -147,16 +148,16 @@ const styles = {
     marginBottom: '14px',
     whiteSpace: 'pre-wrap',
   },
-  explainBtn: (loading) => ({
+  explainBtn: (done) => ({
     padding: '8px 16px',
-    background: loading ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.15)',
+    background: done ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.15)',
     border: '1px solid rgba(99,102,241,0.3)',
     borderRadius: '8px',
     color: '#a5b4fc',
     fontSize: '13px',
     fontWeight: 500,
-    cursor: loading ? 'default' : 'pointer',
-    opacity: loading ? 0.7 : 1,
+    cursor: done ? 'default' : 'pointer',
+    opacity: done ? 0.7 : 1,
   }),
   explanationBox: {
     marginTop: '14px',
@@ -183,13 +184,9 @@ const styles = {
 async function callGroq(prompt) {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY
   if (!apiKey) throw new Error('VITE_GROQ_API_KEY is not set in your .env file.')
-
   const res = await fetch(GROQ_API, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [{ role: 'user', content: prompt }],
@@ -222,8 +219,7 @@ Report content:
 ${record.content}
 
 Explain what this means for the patient.`
-      const result = await callGroq(prompt)
-      setExplanation(result)
+      setExplanation(await callGroq(prompt))
     } catch (e) {
       setError(e.message)
     } finally {
@@ -234,21 +230,14 @@ Explain what this means for the patient.`
   return (
     <div style={styles.recordCard}>
       <div style={styles.recordMeta}>
-        <span style={styles.recordDate}>{new Date(record.acceptedAt || record.date).toLocaleString()}</span>
-        <span style={styles.recordDoctor}>Dr. {record.doctorId}</span>
+        <span style={styles.recordDate}>{new Date(record.created_at).toLocaleString()}</span>
+        <span style={styles.recordDoctor}>Dr. {record.doctor_id}</span>
       </div>
       <div style={styles.recordContent}>{record.content}</div>
       <button style={styles.explainBtn(loading || !!explanation)} onClick={handleExplain} disabled={loading}>
-        {loading ? (
-          <>
-            <span style={styles.spinner} />
-            Explaining...
-          </>
-        ) : explanation ? 'Explained' : 'Explain in Plain English'}
+        {loading ? <><span style={styles.spinner} />Explaining...</> : explanation ? 'Explained' : 'Explain in Plain English'}
       </button>
-      {error && (
-        <div style={{ marginTop: '10px', fontSize: '13px', color: '#fca5a5' }}>Error: {error}</div>
-      )}
+      {error && <div style={{ marginTop: '10px', fontSize: '13px', color: '#fca5a5' }}>Error: {error}</div>}
       {explanation && (
         <div style={styles.explanationBox}>
           <div style={styles.explanationLabel}>AI Explanation</div>
@@ -263,26 +252,33 @@ export default function MyRecords() {
   const navigate = useNavigate()
   const patientId = localStorage.getItem('currentPatientId')
 
-  const allRecords = (() => {
-    try {
-      return JSON.parse(localStorage.getItem(`records_${patientId}`)) || []
-    } catch {
-      return []
-    }
-  })()
+  const [allRecords, setAllRecords] = useState([])
+  const [loadingRecords, setLoadingRecords] = useState(true)
+  const [summary, setSummary] = useState(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState(null)
+
+  useEffect(() => {
+    if (!patientId) return
+    supabase
+      .from('reports')
+      .select('*')
+      .eq('patient_id', patientId)
+      .eq('status', 'accepted')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setAllRecords(data)
+        setLoadingRecords(false)
+      })
+  }, [patientId])
 
   const grouped = TYPES.reduce((acc, type) => {
     acc[type] = allRecords.filter((r) => r.type === type)
     return acc
   }, {})
 
-  const [summary, setSummary] = useState(null)
-  const [summaryLoading, setSummaryLoading] = useState(false)
-  const [summaryError, setSummaryError] = useState(null)
-
   const handleSummary = async () => {
-    if (summaryLoading) return
-    if (allRecords.length === 0) return
+    if (summaryLoading || allRecords.length === 0) return
     setSummaryLoading(true)
     setSummaryError(null)
     setSummary(null)
@@ -296,8 +292,7 @@ Patient's records:
 ${recordsText}
 
 Provide a clear, friendly health summary.`
-      const result = await callGroq(prompt)
-      setSummary(result)
+      setSummary(await callGroq(prompt))
     } catch (e) {
       setSummaryError(e.message)
     } finally {
@@ -314,22 +309,15 @@ Provide a clear, friendly health summary.`
 
   return (
     <div style={styles.page}>
-      {/* Spinner keyframe via a style tag */}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       <nav style={styles.nav}>
         <span style={styles.navBrand}>MyReports</span>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={styles.navLinks}>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>
-              Dashboard
-            </button>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/inbox')}>
-              Inbox
-            </button>
-            <button style={styles.navBtn(true)} onClick={() => navigate('/my-records')}>
-              My Records
-            </button>
+            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
+            <button style={styles.navBtn(false)} onClick={() => navigate('/inbox')}>Inbox</button>
+            <button style={styles.navBtn(true)} onClick={() => navigate('/my-records')}>My Records</button>
           </div>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
@@ -340,14 +328,7 @@ Provide a clear, friendly health summary.`
           <h1 style={styles.heading}>My Records</h1>
           {hasRecords && (
             <button style={styles.summaryBtn} onClick={handleSummary} disabled={summaryLoading}>
-              {summaryLoading ? (
-                <>
-                  <span style={styles.spinner} />
-                  Analysing...
-                </>
-              ) : (
-                <>✨ AI Health Summary</>
-              )}
+              {summaryLoading ? <><span style={styles.spinner} />Analysing...</> : <>✨ AI Health Summary</>}
             </button>
           )}
         </div>
@@ -365,13 +346,15 @@ Provide a clear, friendly health summary.`
           </div>
         )}
 
-        {!hasRecords ? (
+        {loadingRecords ? (
+          <div style={styles.emptyState}>
+            <div style={{ fontSize: '14px', color: '#475569' }}>Loading records...</div>
+          </div>
+        ) : !hasRecords ? (
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>📂</div>
             <div style={{ fontSize: '16px', color: '#64748b', marginBottom: '6px' }}>No records yet</div>
-            <div style={{ fontSize: '13px', color: '#475569' }}>
-              Accept reports from your Inbox to see them here.
-            </div>
+            <div style={{ fontSize: '13px', color: '#475569' }}>Accept reports from your Inbox to see them here.</div>
           </div>
         ) : (
           TYPES.map((type) => {

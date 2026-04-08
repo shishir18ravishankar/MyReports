@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -239,7 +240,7 @@ export default function PatientLogin() {
     setStep(3)
   }
 
-  const handleStep3 = () => {
+  const handleStep3 = async () => {
     const id = uid.trim().toUpperCase()
     if (!id) return setError('User ID cannot be empty.')
     if (!/^[A-Z0-9\-]{4,12}$/.test(id)) return setError('User ID must be 4–12 alphanumeric characters (hyphens allowed).')
@@ -250,7 +251,7 @@ export default function PatientLogin() {
     const db = getPatientsDB()
     if (db[id]) return setError('This User ID is already taken. Try a different one.')
 
-    db[id] = {
+    const entry = {
       email: email.trim(),
       aadhaar: aadhaar.trim(),
       password,
@@ -258,7 +259,16 @@ export default function PatientLogin() {
       records: [],
       createdAt: new Date().toISOString(),
     }
+
+    // Save to localStorage
+    db[id] = entry
     savePatientsDB(db)
+
+    // Save to Supabase (non-blocking — don't fail signup if this errors)
+    const { error: sbErr } = await supabase
+      .from('patients')
+      .insert({ id, name: entry.email, phone: entry.aadhaar })
+    if (sbErr && sbErr.code !== '23505') console.warn('Supabase patients insert failed:', sbErr.message)
 
     localStorage.setItem('currentPatientId', id)
     navigate('/patient-dashboard')
