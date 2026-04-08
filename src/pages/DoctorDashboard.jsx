@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 const REPORT_TYPES = ['Blood Test', 'Scan', 'Prescription', 'Other']
 
@@ -49,16 +50,8 @@ const styles = {
     margin: '48px auto',
     padding: '0 24px',
   },
-  heading: {
-    fontSize: '28px',
-    fontWeight: 700,
-    marginBottom: '8px',
-  },
-  subheading: {
-    color: '#a5b4fc',
-    fontSize: '15px',
-    marginBottom: '36px',
-  },
+  heading: { fontSize: '28px', fontWeight: 700, marginBottom: '8px' },
+  subheading: { color: '#a5b4fc', fontSize: '15px', marginBottom: '36px' },
   card: {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.1)',
@@ -86,7 +79,7 @@ const styles = {
     outline: 'none',
     boxSizing: 'border-box',
     marginBottom: '22px',
-    transition: 'border-color 0.2s',
+    fontFamily: 'inherit',
   },
   textarea: {
     width: '100%',
@@ -122,18 +115,17 @@ const styles = {
     transition: 'all 0.2s',
     textAlign: 'center',
   }),
-  sendBtn: {
+  sendBtn: (loading) => ({
     width: '100%',
     padding: '14px',
-    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    background: loading ? 'rgba(99,102,241,0.5)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
     border: 'none',
     borderRadius: '10px',
     color: '#fff',
     fontSize: '16px',
     fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'opacity 0.2s',
-  },
+    cursor: loading ? 'default' : 'pointer',
+  }),
   toast: (type) => ({
     marginTop: '16px',
     padding: '12px 16px',
@@ -143,15 +135,8 @@ const styles = {
     border: `1px solid ${type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
     color: type === 'success' ? '#86efac' : '#fca5a5',
   }),
-  sentList: {
-    marginTop: '32px',
-  },
-  sentHeading: {
-    fontSize: '16px',
-    fontWeight: 600,
-    color: '#a5b4fc',
-    marginBottom: '14px',
-  },
+  sentList: { marginTop: '32px' },
+  sentHeading: { fontSize: '16px', fontWeight: 600, color: '#a5b4fc', marginBottom: '14px' },
   sentCard: {
     background: 'rgba(255,255,255,0.04)',
     border: '1px solid rgba(255,255,255,0.08)',
@@ -175,50 +160,57 @@ const styles = {
 
 export default function DoctorDashboard() {
   const navigate = useNavigate()
-  const doctorId = localStorage.getItem('currentDoctorId') || 'Doctor'
+  const doctorId = localStorage.getItem('currentDoctorId')
+  const doctorMci = localStorage.getItem('currentDoctorMci') || 'Doctor'
 
   const [patientId, setPatientId] = useState('')
   const [reportContent, setReportContent] = useState('')
   const [reportType, setReportType] = useState('Blood Test')
+  const [sending, setSending] = useState(false)
   const [toast, setToast] = useState(null)
-  const [sentReports, setSentReports] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(`sent_${doctorId}`)) || []
-    } catch {
-      return []
-    }
-  })
+  const [sentReports, setSentReports] = useState([])
+
+  useEffect(() => {
+    if (!doctorId) return
+    supabase
+      .from('reports')
+      .select('id, patient_id, type, created_at')
+      .eq('doctor_id', doctorId)
+      .order('created_at', { ascending: false })
+      .limit(8)
+      .then(({ data }) => { if (data) setSentReports(data) })
+  }, [doctorId])
 
   const showToast = (message, type) => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3500)
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const pid = patientId.trim()
     if (!pid) return showToast('Please enter a Patient ID.', 'error')
     if (!reportContent.trim()) return showToast('Report content cannot be empty.', 'error')
 
-    const report = {
-      id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
-      patientId: pid,
-      type: reportType,
-      content: reportContent.trim(),
-      doctorId,
-      date: new Date().toISOString(),
-    }
+    setSending(true)
+    const id = 'RPT-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+    const { data, error } = await supabase
+      .from('reports')
+      .insert({
+        id,
+        patient_id: pid,
+        doctor_id: doctorId,
+        type: reportType,
+        content: reportContent.trim(),
+        status: 'pending',
+      })
+      .select('id, patient_id, type, created_at')
+      .single()
 
-    // Write to patient inbox
-    const inboxKey = `inbox_${pid}`
-    const inbox = JSON.parse(localStorage.getItem(inboxKey) || '[]')
-    inbox.push(report)
-    localStorage.setItem(inboxKey, JSON.stringify(inbox))
+    setSending(false)
 
-    // Track in doctor's sent list
-    const updatedSent = [report, ...sentReports]
-    setSentReports(updatedSent)
-    localStorage.setItem(`sent_${doctorId}`, JSON.stringify(updatedSent))
+    if (error) return showToast(error.message, 'error')
 
+    setSentReports((prev) => [data, ...prev])
     setPatientId('')
     setReportContent('')
     setReportType('Blood Test')
@@ -227,6 +219,7 @@ export default function DoctorDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('currentDoctorId')
+    localStorage.removeItem('currentDoctorMci')
     navigate('/')
   }
 
@@ -235,7 +228,7 @@ export default function DoctorDashboard() {
       <nav style={styles.nav}>
         <span style={styles.navBrand}>MyReports</span>
         <div style={styles.navRight}>
-          <span style={styles.doctorBadge}>Dr. {doctorId}</span>
+          <span style={styles.doctorBadge}>MCI: {doctorMci}</span>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </nav>
@@ -251,6 +244,7 @@ export default function DoctorDashboard() {
             placeholder="e.g. PAT-001"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
+            disabled={sending}
           />
 
           <label style={styles.label}>Report Type</label>
@@ -272,28 +266,27 @@ export default function DoctorDashboard() {
             placeholder="Enter report details, findings, or notes..."
             value={reportContent}
             onChange={(e) => setReportContent(e.target.value)}
+            disabled={sending}
           />
 
-          <button style={styles.sendBtn} onClick={handleSend}>
-            Send to Patient Inbox
+          <button style={styles.sendBtn(sending)} onClick={handleSend} disabled={sending}>
+            {sending ? 'Sending...' : 'Send to Patient Inbox'}
           </button>
 
-          {toast && (
-            <div style={styles.toast(toast.type)}>{toast.message}</div>
-          )}
+          {toast && <div style={styles.toast(toast.type)}>{toast.message}</div>}
         </div>
 
         {sentReports.length > 0 && (
           <div style={styles.sentList}>
             <div style={styles.sentHeading}>Recently Sent ({sentReports.length})</div>
-            {sentReports.slice(0, 8).map((r) => (
+            {sentReports.map((r) => (
               <div key={r.id} style={styles.sentCard}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>
-                    Patient: {r.patientId}
+                    Patient: {r.patient_id}
                   </div>
                   <div style={styles.sentMeta}>
-                    {new Date(r.date).toLocaleString()}
+                    {new Date(r.created_at).toLocaleString()}
                   </div>
                 </div>
                 <span style={styles.typePill}>{r.type}</span>
