@@ -1,16 +1,26 @@
-# React + Vite
+# MyReports 🏥
+### Your health history, always in your pocket.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A digital health records platform where doctors upload reports directly to patients. No more carrying physical files.
 
-Currently, two official plugins are available:
+## Features
+- 🏥 Patient registration with unique ID + QR code
+- 👨‍⚕️ Doctor uploads reports in under 30 seconds
+- 📬 Patient inbox — accept or discard reports
+- 📁 My Records — organised by folder
+- 🤖 AI explains every report in plain English
+- 🆘 Emergency card accessible without unlocking phone
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech Stack
+React + Vite + React Router + Groq API (LLaMA 3.3 70B)
 
-## React Compiler
+## Run Locally
+```bash
+git clone https://github.com/shishir18ravishankar/MyReports
+cd MyReports
+npm install
+echo "VITE_GROQ_API_KEY=your_key" > .env
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Built at BuildWithAI — InnovateX 4.0 Hackathon 2026
