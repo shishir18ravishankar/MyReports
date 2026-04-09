@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 const styles = {
   page: {
@@ -104,12 +106,34 @@ export default function PatientDashboard() {
   const navigate = useNavigate()
   const patientId = localStorage.getItem('currentPatientId') || 'Patient'
 
-  const inbox = (() => {
-    try { return JSON.parse(localStorage.getItem(`inbox_${patientId}`)) || [] } catch { return [] }
-  })()
-  const records = (() => {
-    try { return JSON.parse(localStorage.getItem(`records_${patientId}`)) || [] } catch { return [] }
-  })()
+  const [stats, setStats] = useState({ pending: '—', saved: '—', types: '—' })
+  const [inboxCount, setInboxCount] = useState(0)
+
+  useEffect(() => {
+    if (!patientId || patientId === 'Patient') return
+    const fetchStats = async () => {
+      const [pendingRes, acceptedRes] = await Promise.all([
+        supabase
+          .from('reports')
+          .select('id', { count: 'exact', head: true })
+          .eq('patient_id', patientId)
+          .eq('status', 'pending'),
+        supabase
+          .from('reports')
+          .select('report_type')
+          .eq('patient_id', patientId)
+          .eq('status', 'accepted'),
+      ])
+      const pending = pendingRes.count ?? 0
+      const saved   = acceptedRes.data?.length ?? 0
+      const types   = new Set(
+        (acceptedRes.data || []).map(r => r.report_type).filter(Boolean)
+      ).size
+      setStats({ pending, saved, types })
+      setInboxCount(pending)
+    }
+    fetchStats()
+  }, [patientId])
 
   const handleCardHover = (e, enter) => {
     e.currentTarget.style.transform = enter ? 'translateY(-3px)' : 'translateY(0)'
@@ -141,17 +165,15 @@ export default function PatientDashboard() {
 
         <div style={styles.statsRow}>
           <div style={styles.statCard('rgba(99,102,241,0.15)')}>
-            <div style={styles.statNum}>{inbox.length}</div>
+            <div style={styles.statNum}>{stats.pending}</div>
             <div style={styles.statLabel}>Pending Reports</div>
           </div>
           <div style={styles.statCard('rgba(34,197,94,0.12)')}>
-            <div style={styles.statNum}>{records.length}</div>
+            <div style={styles.statNum}>{stats.saved}</div>
             <div style={styles.statLabel}>Saved Records</div>
           </div>
           <div style={styles.statCard('rgba(168,85,247,0.12)')}>
-            <div style={styles.statNum}>
-              {[...new Set(records.map((r) => r.type))].length}
-            </div>
+            <div style={styles.statNum}>{stats.types}</div>
             <div style={styles.statLabel}>Record Types</div>
           </div>
         </div>
@@ -167,9 +189,9 @@ export default function PatientDashboard() {
             <div style={styles.actionTitle}>Inbox</div>
             <div style={styles.actionDesc}>
               Review and accept reports sent by your doctor.
-              {inbox.length > 0 && (
+              {inboxCount > 0 && (
                 <span style={{ display: 'block', marginTop: '6px', color: '#fbbf24', fontWeight: 600 }}>
-                  {inbox.length} new {inbox.length === 1 ? 'report' : 'reports'} waiting
+                  {inboxCount} new {inboxCount === 1 ? 'report' : 'reports'} waiting
                 </span>
               )}
             </div>
