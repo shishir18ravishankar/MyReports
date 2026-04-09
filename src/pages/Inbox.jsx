@@ -9,10 +9,10 @@ const TYPE_COLORS = {
   'Other':        { bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.25)', text: '#d8b4fe', dot: '#a855f7' },
 }
 
-const styles = {
+const S = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+    background: '#1A1B30',
     fontFamily: "'Segoe UI', sans-serif",
     color: '#fff',
   },
@@ -21,9 +21,8 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '18px 32px',
-    background: 'rgba(255,255,255,0.05)',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    backdropFilter: 'blur(10px)',
+    background: '#252645',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
   },
   navBrand: {
     fontSize: '20px',
@@ -34,9 +33,9 @@ const styles = {
   },
   navLinks: { display: 'flex', gap: '8px' },
   navBtn: (active) => ({
-    background: active ? 'rgba(129,140,248,0.2)' : 'transparent',
-    border: active ? '1px solid rgba(129,140,248,0.4)' : '1px solid transparent',
-    color: active ? '#a5b4fc' : '#64748b',
+    background: active ? 'rgba(139,92,246,0.2)' : 'transparent',
+    border: active ? '1px solid rgba(139,92,246,0.4)' : '1px solid transparent',
+    color: active ? '#c4b5fd' : '#64748b',
     borderRadius: '8px',
     padding: '7px 14px',
     cursor: 'pointer',
@@ -44,8 +43,8 @@ const styles = {
     fontWeight: active ? 600 : 400,
   }),
   logoutBtn: {
-    background: 'rgba(239,68,68,0.15)',
-    border: '1px solid rgba(239,68,68,0.3)',
+    background: 'rgba(239,68,68,0.12)',
+    border: '1px solid rgba(239,68,68,0.25)',
     color: '#fca5a5',
     borderRadius: '8px',
     padding: '6px 14px',
@@ -54,7 +53,7 @@ const styles = {
     marginLeft: '8px',
   },
   container: {
-    maxWidth: '680px',
+    maxWidth: '640px',
     margin: '48px auto',
     padding: '0 24px',
   },
@@ -62,38 +61,37 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: '28px',
+    marginBottom: '26px',
   },
-  heading: { fontSize: '28px', fontWeight: 700, margin: 0 },
+  heading: { fontSize: '26px', fontWeight: 700, margin: 0 },
   badge: {
-    background: 'rgba(129,140,248,0.2)',
-    border: '1px solid rgba(129,140,248,0.3)',
+    background: 'rgba(139,92,246,0.15)',
+    border: '1px solid rgba(139,92,246,0.3)',
     borderRadius: '20px',
     padding: '4px 12px',
     fontSize: '13px',
-    color: '#a5b4fc',
+    color: '#c4b5fd',
   },
   emptyState: {
     textAlign: 'center',
     padding: '60px 24px',
     color: '#475569',
   },
-  emptyIcon: { fontSize: '48px', marginBottom: '16px' },
+  emptyIcon: { fontSize: '48px', marginBottom: '14px' },
   emptyText: { fontSize: '16px', marginBottom: '6px', color: '#64748b' },
   emptySubtext: { fontSize: '13px', color: '#475569' },
   card: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#252645',
+    border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: '16px',
-    padding: '22px 24px',
-    marginBottom: '14px',
-    backdropFilter: 'blur(12px)',
+    padding: '20px 22px',
+    marginBottom: '12px',
   },
   cardTop: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '14px',
+    marginBottom: '12px',
   },
   typePill: (type) => ({
     display: 'inline-flex',
@@ -114,15 +112,15 @@ const styles = {
     background: TYPE_COLORS[type]?.dot || TYPE_COLORS['Other'].dot,
     flexShrink: 0,
   }),
-  meta: { fontSize: '12px', color: '#64748b', marginTop: '2px' },
+  meta: { fontSize: '12px', color: '#64748b', marginTop: '4px' },
   content: {
     fontSize: '14px',
     color: '#cbd5e1',
     lineHeight: '1.6',
     background: 'rgba(0,0,0,0.2)',
     borderRadius: '10px',
-    padding: '12px 14px',
-    marginBottom: '18px',
+    padding: '11px 13px',
+    marginBottom: '16px',
     whiteSpace: 'pre-wrap',
   },
   actions: { display: 'flex', gap: '10px' },
@@ -158,7 +156,7 @@ export default function Inbox() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!patientId) return
+    if (!patientId) { navigate('/patient-login'); return }
     supabase
       .from('reports')
       .select('*')
@@ -182,59 +180,55 @@ export default function Inbox() {
   }
 
   return (
-    <div style={styles.page}>
-      <nav style={styles.nav}>
-        <span style={styles.navBrand}>MyReports</span>
+    <div style={S.page}>
+      <nav style={S.nav}>
+        <span style={S.navBrand}>MyReports</span>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={styles.navLinks}>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
-            <button style={styles.navBtn(true)} onClick={() => navigate('/inbox')}>Inbox</button>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/my-records')}>My Records</button>
+          <div style={S.navLinks}>
+            <button style={S.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
+            <button style={S.navBtn(true)} onClick={() => navigate('/inbox')}>Inbox</button>
+            <button style={S.navBtn(false)} onClick={() => navigate('/my-records')}>My Records</button>
           </div>
-          <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+          <button style={S.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
-      <div style={styles.container}>
-        <div style={styles.headerRow}>
-          <h1 style={styles.heading}>Inbox</h1>
-          {reports.length > 0 && (
-            <span style={styles.badge}>{reports.length} pending</span>
-          )}
+      <div style={S.container}>
+        <div style={S.headerRow}>
+          <h1 style={S.heading}>Inbox</h1>
+          {reports.length > 0 && <span style={S.badge}>{reports.length} pending</span>}
         </div>
 
         {loading ? (
-          <div style={styles.emptyState}>
-            <div style={{ fontSize: '14px', color: '#475569' }}>Loading...</div>
+          <div style={S.emptyState}>
+            <div style={{ fontSize: '14px', color: '#475569' }}>Loading…</div>
           </div>
         ) : reports.length === 0 ? (
-          <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>📭</div>
-            <div style={styles.emptyText}>Your inbox is empty</div>
-            <div style={styles.emptySubtext}>New reports from your doctor will appear here.</div>
+          <div style={S.emptyState}>
+            <div style={S.emptyIcon}>📭</div>
+            <div style={S.emptyText}>Your inbox is empty</div>
+            <div style={S.emptySubtext}>New reports from your doctor will appear here.</div>
           </div>
         ) : (
           reports.map((report) => (
-            <div key={report.id} style={styles.card}>
-              <div style={styles.cardTop}>
+            <div key={report.id} style={S.card}>
+              <div style={S.cardTop}>
                 <div>
-                  <span style={styles.typePill(report.type)}>
-                    <span style={styles.typeDot(report.type)} />
+                  <span style={S.typePill(report.type)}>
+                    <span style={S.typeDot(report.type)} />
                     {report.type}
                   </span>
-                  <div style={styles.meta}>
+                  <div style={S.meta}>
                     From Dr. {report.doctor_id} &nbsp;·&nbsp; {new Date(report.created_at).toLocaleString()}
                   </div>
                 </div>
               </div>
-
-              <div style={styles.content}>{report.content}</div>
-
-              <div style={styles.actions}>
-                <button style={styles.acceptBtn} onClick={() => updateStatus(report.id, 'accepted')}>
+              <div style={S.content}>{report.content}</div>
+              <div style={S.actions}>
+                <button style={S.acceptBtn} onClick={() => updateStatus(report.id, 'accepted')}>
                   Accept & Save
                 </button>
-                <button style={styles.discardBtn} onClick={() => updateStatus(report.id, 'discarded')}>
+                <button style={S.discardBtn} onClick={() => updateStatus(report.id, 'discarded')}>
                   Discard
                 </button>
               </div>

@@ -6,18 +6,18 @@ const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 const FOLDER_META = {
-  'Blood Test':   { icon: '🩸', color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)',  text: '#fca5a5' },
-  'Scan':         { icon: '🔬', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', text: '#93c5fd' },
-  'Prescription': { icon: '💊', color: '#22c55e', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.25)',  text: '#86efac' },
-  'Other':        { icon: '📄', color: '#a855f7', bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.25)', text: '#d8b4fe' },
+  'Blood Test':   { icon: '🩸', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)',  text: '#fca5a5' },
+  'Scan':         { icon: '🔬', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', text: '#93c5fd' },
+  'Prescription': { icon: '💊', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.25)',  text: '#86efac' },
+  'Other':        { icon: '📄', bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.25)', text: '#d8b4fe' },
 }
 
 const TYPES = Object.keys(FOLDER_META)
 
-const styles = {
+const S = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+    background: '#1A1B30',
     fontFamily: "'Segoe UI', sans-serif",
     color: '#fff',
   },
@@ -26,9 +26,8 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '18px 32px',
-    background: 'rgba(255,255,255,0.05)',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    backdropFilter: 'blur(10px)',
+    background: '#252645',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
   },
   navBrand: {
     fontSize: '20px',
@@ -39,9 +38,9 @@ const styles = {
   },
   navLinks: { display: 'flex', gap: '8px' },
   navBtn: (active) => ({
-    background: active ? 'rgba(129,140,248,0.2)' : 'transparent',
-    border: active ? '1px solid rgba(129,140,248,0.4)' : '1px solid transparent',
-    color: active ? '#a5b4fc' : '#64748b',
+    background: active ? 'rgba(139,92,246,0.2)' : 'transparent',
+    border: active ? '1px solid rgba(139,92,246,0.4)' : '1px solid transparent',
+    color: active ? '#c4b5fd' : '#64748b',
     borderRadius: '8px',
     padding: '7px 14px',
     cursor: 'pointer',
@@ -49,8 +48,8 @@ const styles = {
     fontWeight: active ? 600 : 400,
   }),
   logoutBtn: {
-    background: 'rgba(239,68,68,0.15)',
-    border: '1px solid rgba(239,68,68,0.3)',
+    background: 'rgba(239,68,68,0.12)',
+    border: '1px solid rgba(239,68,68,0.25)',
     color: '#fca5a5',
     borderRadius: '8px',
     padding: '6px 14px',
@@ -59,7 +58,7 @@ const styles = {
     marginLeft: '8px',
   },
   container: {
-    maxWidth: '760px',
+    maxWidth: '720px',
     margin: '48px auto',
     padding: '0 24px',
   },
@@ -67,14 +66,14 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: '32px',
+    marginBottom: '28px',
     flexWrap: 'wrap',
-    gap: '16px',
+    gap: '14px',
   },
-  heading: { fontSize: '28px', fontWeight: 700, margin: 0 },
+  heading: { fontSize: '26px', fontWeight: 700, margin: 0 },
   summaryBtn: {
-    padding: '11px 20px',
-    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    padding: '10px 18px',
+    background: '#8B5CF6',
     border: 'none',
     borderRadius: '10px',
     color: '#fff',
@@ -86,34 +85,34 @@ const styles = {
     gap: '7px',
   },
   summaryBox: {
-    background: 'rgba(99,102,241,0.1)',
-    border: '1px solid rgba(99,102,241,0.3)',
+    background: 'rgba(139,92,246,0.1)',
+    border: '1px solid rgba(139,92,246,0.3)',
     borderRadius: '14px',
-    padding: '20px 24px',
-    marginBottom: '32px',
+    padding: '18px 22px',
+    marginBottom: '28px',
   },
-  summaryTitle: { fontSize: '15px', fontWeight: 600, color: '#a5b4fc', marginBottom: '10px' },
+  summaryTitle: { fontSize: '14px', fontWeight: 600, color: '#c4b5fd', marginBottom: '8px' },
   summaryText: { fontSize: '14px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
   emptyState: {
     textAlign: 'center',
     padding: '80px 24px',
     color: '#475569',
   },
-  emptyIcon: { fontSize: '48px', marginBottom: '16px' },
-  folderSection: { marginBottom: '36px' },
+  emptyIcon: { fontSize: '48px', marginBottom: '14px' },
+  folderSection: { marginBottom: '32px' },
   folderHeader: (meta) => ({
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    marginBottom: '14px',
-    padding: '10px 16px',
+    marginBottom: '12px',
+    padding: '10px 14px',
     background: meta.bg,
     border: `1px solid ${meta.border}`,
     borderRadius: '10px',
   }),
-  folderIcon: { fontSize: '20px' },
+  folderIcon: { fontSize: '18px' },
   folderTitle: (meta) => ({
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: 700,
     color: meta.text,
     flex: 1,
@@ -124,11 +123,11 @@ const styles = {
     opacity: 0.7,
   }),
   recordCard: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.09)',
+    background: '#252645',
+    border: '1px solid rgba(255,255,255,0.07)',
     borderRadius: '12px',
-    padding: '18px 20px',
-    marginBottom: '10px',
+    padding: '16px 18px',
+    marginBottom: '8px',
   },
   recordMeta: {
     display: 'flex',
@@ -145,37 +144,80 @@ const styles = {
     background: 'rgba(0,0,0,0.2)',
     borderRadius: '8px',
     padding: '10px 12px',
-    marginBottom: '14px',
+    marginBottom: '12px',
     whiteSpace: 'pre-wrap',
   },
-  explainBtn: (done) => ({
-    padding: '8px 16px',
-    background: done ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.15)',
-    border: '1px solid rgba(99,102,241,0.3)',
+  fileSection: {
+    marginBottom: '12px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    border: '1px solid rgba(255,255,255,0.08)',
+  },
+  viewFileBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 15px',
+    background: 'rgba(59,130,246,0.15)',
+    border: '1px solid rgba(59,130,246,0.3)',
     borderRadius: '8px',
-    color: '#a5b4fc',
+    color: '#93c5fd',
+    fontSize: '13px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    marginBottom: '12px',
+    textDecoration: 'none',
+  },
+  inlineImage: {
+    width: '100%',
+    maxHeight: '420px',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    background: '#000',
+    display: 'block',
+    marginBottom: '12px',
+  },
+  actionsRow: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  explainBtn: (done) => ({
+    padding: '8px 15px',
+    background: done ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.15)',
+    border: '1px solid rgba(139,92,246,0.3)',
+    borderRadius: '8px',
+    color: '#c4b5fd',
     fontSize: '13px',
     fontWeight: 500,
     cursor: done ? 'default' : 'pointer',
     opacity: done ? 0.7 : 1,
   }),
   explanationBox: {
-    marginTop: '14px',
-    background: 'rgba(129,140,248,0.08)',
-    border: '1px solid rgba(129,140,248,0.2)',
+    marginTop: '12px',
+    background: 'rgba(139,92,246,0.08)',
+    border: '1px solid rgba(139,92,246,0.2)',
     borderRadius: '10px',
-    padding: '14px 16px',
+    padding: '12px 14px',
   },
-  explanationLabel: { fontSize: '11px', fontWeight: 700, color: '#818cf8', letterSpacing: '0.08em', marginBottom: '8px', textTransform: 'uppercase' },
+  explanationLabel: {
+    fontSize: '11px',
+    fontWeight: 700,
+    color: '#8B5CF6',
+    letterSpacing: '0.08em',
+    marginBottom: '7px',
+    textTransform: 'uppercase',
+  },
   explanationText: { fontSize: '14px', color: '#e2e8f0', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
   spinner: {
     display: 'inline-block',
     width: '12px',
     height: '12px',
-    border: '2px solid rgba(165,180,252,0.3)',
-    borderTop: '2px solid #a5b4fc',
+    border: '2px solid rgba(196,181,253,0.3)',
+    borderTop: '2px solid #c4b5fd',
     borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
+    animation: 'mr-spin 0.8s linear infinite',
     marginRight: '6px',
     verticalAlign: 'middle',
   },
@@ -202,13 +244,27 @@ async function callGroq(prompt) {
   return data.choices[0].message.content.trim()
 }
 
+function isImage(url) {
+  return /\.(jpg|jpeg|png)(\?|$)/i.test(url)
+}
+
+function isPdf(url) {
+  return /\.pdf(\?|$)/i.test(url)
+}
+
 function RecordCard({ record }) {
   const [explanation, setExplanation] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showImage, setShowImage] = useState(false)
+
+  const hasFile = !!record.file_url
+  const fileIsImage = hasFile && isImage(record.file_url)
+  const fileIsPdf = hasFile && isPdf(record.file_url)
 
   const handleExplain = async () => {
     if (loading || explanation) return
+    if (!record.content) return
     setLoading(true)
     setError(null)
     try {
@@ -228,20 +284,73 @@ Explain what this means for the patient.`
   }
 
   return (
-    <div style={styles.recordCard}>
-      <div style={styles.recordMeta}>
-        <span style={styles.recordDate}>{new Date(record.created_at).toLocaleString()}</span>
-        <span style={styles.recordDoctor}>Dr. {record.doctor_id}</span>
+    <div style={S.recordCard}>
+      <div style={S.recordMeta}>
+        <span style={S.recordDate}>{new Date(record.created_at).toLocaleString()}</span>
+        <span style={S.recordDoctor}>Dr. {record.doctor_id}</span>
       </div>
-      <div style={styles.recordContent}>{record.content}</div>
-      <button style={styles.explainBtn(loading || !!explanation)} onClick={handleExplain} disabled={loading}>
-        {loading ? <><span style={styles.spinner} />Explaining...</> : explanation ? 'Explained' : 'Explain in Plain English'}
-      </button>
-      {error && <div style={{ marginTop: '10px', fontSize: '13px', color: '#fca5a5' }}>Error: {error}</div>}
+
+      {record.content && (
+        <div style={S.recordContent}>{record.content}</div>
+      )}
+
+      {hasFile && (
+        <div style={{ marginBottom: '12px' }}>
+          {fileIsPdf && (
+            <a
+              href={record.file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={S.viewFileBtn}
+            >
+              📄 View PDF
+            </a>
+          )}
+          {fileIsImage && (
+            <>
+              <button
+                style={S.viewFileBtn}
+                onClick={() => setShowImage((v) => !v)}
+              >
+                🖼 {showImage ? 'Hide Image' : 'View Image'}
+              </button>
+              {showImage && (
+                <img
+                  src={record.file_url}
+                  alt="Report attachment"
+                  style={S.inlineImage}
+                />
+              )}
+            </>
+          )}
+          {!fileIsPdf && !fileIsImage && (
+            <a
+              href={record.file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={S.viewFileBtn}
+            >
+              📎 View File
+            </a>
+          )}
+        </div>
+      )}
+
+      <div style={S.actionsRow}>
+        {record.content && (
+          <button style={S.explainBtn(loading || !!explanation)} onClick={handleExplain} disabled={loading}>
+            {loading
+              ? <><span style={S.spinner} />Explaining…</>
+              : explanation ? 'Explained' : 'Explain in Plain English'}
+          </button>
+        )}
+      </div>
+
+      {error && <div style={{ marginTop: '8px', fontSize: '13px', color: '#fca5a5' }}>Error: {error}</div>}
       {explanation && (
-        <div style={styles.explanationBox}>
-          <div style={styles.explanationLabel}>AI Explanation</div>
-          <div style={styles.explanationText}>{explanation}</div>
+        <div style={S.explanationBox}>
+          <div style={S.explanationLabel}>AI Explanation</div>
+          <div style={S.explanationText}>{explanation}</div>
         </div>
       )}
     </div>
@@ -259,7 +368,7 @@ export default function MyRecords() {
   const [summaryError, setSummaryError] = useState(null)
 
   useEffect(() => {
-    if (!patientId) return
+    if (!patientId) { navigate('/patient-login'); return }
     supabase
       .from('reports')
       .select('*')
@@ -308,52 +417,52 @@ Provide a clear, friendly health summary.`
   const hasRecords = allRecords.length > 0
 
   return (
-    <div style={styles.page}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={S.page}>
+      <style>{`@keyframes mr-spin { to { transform: rotate(360deg); } }`}</style>
 
-      <nav style={styles.nav}>
-        <span style={styles.navBrand}>MyReports</span>
+      <nav style={S.nav}>
+        <span style={S.navBrand}>MyReports</span>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={styles.navLinks}>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
-            <button style={styles.navBtn(false)} onClick={() => navigate('/inbox')}>Inbox</button>
-            <button style={styles.navBtn(true)} onClick={() => navigate('/my-records')}>My Records</button>
+          <div style={S.navLinks}>
+            <button style={S.navBtn(false)} onClick={() => navigate('/patient-dashboard')}>Dashboard</button>
+            <button style={S.navBtn(false)} onClick={() => navigate('/inbox')}>Inbox</button>
+            <button style={S.navBtn(true)} onClick={() => navigate('/my-records')}>My Records</button>
           </div>
-          <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+          <button style={S.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
-      <div style={styles.container}>
-        <div style={styles.headerRow}>
-          <h1 style={styles.heading}>My Records</h1>
+      <div style={S.container}>
+        <div style={S.headerRow}>
+          <h1 style={S.heading}>My Records</h1>
           {hasRecords && (
-            <button style={styles.summaryBtn} onClick={handleSummary} disabled={summaryLoading}>
-              {summaryLoading ? <><span style={styles.spinner} />Analysing...</> : <>✨ AI Health Summary</>}
+            <button style={S.summaryBtn} onClick={handleSummary} disabled={summaryLoading}>
+              {summaryLoading ? <><span style={S.spinner} />Analysing…</> : <>✨ AI Health Summary</>}
             </button>
           )}
         </div>
 
         {summaryError && (
-          <div style={{ ...styles.summaryBox, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', marginBottom: '24px' }}>
+          <div style={{ ...S.summaryBox, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', marginBottom: '22px' }}>
             <div style={{ fontSize: '13px', color: '#fca5a5' }}>Error: {summaryError}</div>
           </div>
         )}
 
         {summary && (
-          <div style={styles.summaryBox}>
-            <div style={styles.summaryTitle}>✨ AI Health Summary</div>
-            <div style={styles.summaryText}>{summary}</div>
+          <div style={S.summaryBox}>
+            <div style={S.summaryTitle}>✨ AI Health Summary</div>
+            <div style={S.summaryText}>{summary}</div>
           </div>
         )}
 
         {loadingRecords ? (
-          <div style={styles.emptyState}>
-            <div style={{ fontSize: '14px', color: '#475569' }}>Loading records...</div>
+          <div style={S.emptyState}>
+            <div style={{ fontSize: '14px', color: '#475569' }}>Loading records…</div>
           </div>
         ) : !hasRecords ? (
-          <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>📂</div>
-            <div style={{ fontSize: '16px', color: '#64748b', marginBottom: '6px' }}>No records yet</div>
+          <div style={S.emptyState}>
+            <div style={S.emptyIcon}>📂</div>
+            <div style={{ fontSize: '15px', color: '#64748b', marginBottom: '6px' }}>No records yet</div>
             <div style={{ fontSize: '13px', color: '#475569' }}>Accept reports from your Inbox to see them here.</div>
           </div>
         ) : (
@@ -362,11 +471,11 @@ Provide a clear, friendly health summary.`
             if (records.length === 0) return null
             const meta = FOLDER_META[type]
             return (
-              <div key={type} style={styles.folderSection}>
-                <div style={styles.folderHeader(meta)}>
-                  <span style={styles.folderIcon}>{meta.icon}</span>
-                  <span style={styles.folderTitle(meta)}>{type}</span>
-                  <span style={styles.folderCount(meta)}>{records.length} record{records.length !== 1 ? 's' : ''}</span>
+              <div key={type} style={S.folderSection}>
+                <div style={S.folderHeader(meta)}>
+                  <span style={S.folderIcon}>{meta.icon}</span>
+                  <span style={S.folderTitle(meta)}>{type}</span>
+                  <span style={S.folderCount(meta)}>{records.length} record{records.length !== 1 ? 's' : ''}</span>
                 </div>
                 {records.map((record) => (
                   <RecordCard key={record.id} record={record} />

@@ -11,10 +11,10 @@ function generateDoctorId() {
   return `DR-${suffix}`
 }
 
+// doctorsDB keeps only { password } per id — Supabase doctors table has no password column.
 function getDoctorsDB() {
   try { return JSON.parse(localStorage.getItem('doctorsDB')) || {} } catch { return {} }
 }
-
 function saveDoctorsDB(db) {
   localStorage.setItem('doctorsDB', JSON.stringify(db))
 }
@@ -39,453 +39,516 @@ const S = {
     left: '24px',
     background: 'rgba(255,255,255,0.06)',
     border: '1px solid rgba(255,255,255,0.12)',
-    color: '#94a3b8',
+    color: '#A1A1AA',
     borderRadius: '8px',
     padding: '7px 14px',
     cursor: 'pointer',
     fontSize: '13px',
   },
   icon: { fontSize: '50px', marginBottom: '10px' },
-  title: { fontSize: '26px', fontWeight: 700, marginBottom: '4px' },
-  subtitle: { fontSize: '14px', color: '#64748b', marginBottom: '32px', textAlign: 'center' },
+  title: { fontSize: '26px', fontWeight: 700, marginBottom: '4px', color: '#fff' },
+  subtitle: { fontSize: '14px', color: '#A1A1AA', marginBottom: '28px' },
   card: {
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '420px',
     background: '#252645',
-    borderRadius: '20px',
-    padding: '32px 28px',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '16px',
+    padding: '28px',
   },
-  stepRow: {
+  tabs: {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    marginBottom: '28px',
+    background: 'rgba(255,255,255,0.05)',
+    borderRadius: '10px',
+    padding: '4px',
+    marginBottom: '24px',
   },
-  stepDot: (active, done) => ({
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: 700,
-    background: done ? '#8B5CF6' : active ? 'rgba(139,92,246,0.25)' : 'rgba(255,255,255,0.07)',
-    border: active || done ? '2px solid #8B5CF6' : '2px solid rgba(255,255,255,0.1)',
-    color: done || active ? '#fff' : '#64748b',
-    transition: 'all 0.3s',
-    flexShrink: 0,
-  }),
-  stepLine: (done) => ({
+  tab: (active) => ({
     flex: 1,
-    height: '2px',
-    background: done ? '#8B5CF6' : 'rgba(255,255,255,0.1)',
-    transition: 'background 0.3s',
+    padding: '8px',
+    border: 'none',
+    borderRadius: '8px',
+    background: active ? '#8B5CF6' : 'transparent',
+    color: active ? '#fff' : '#A1A1AA',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: active ? 600 : 400,
+    transition: 'all 0.2s',
   }),
   label: {
     display: 'block',
     fontSize: '12px',
     fontWeight: 600,
-    color: '#a5b4fc',
-    letterSpacing: '0.06em',
+    color: '#A1A1AA',
+    marginBottom: '6px',
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
-    marginBottom: '8px',
   },
   input: {
     width: '100%',
-    background: 'rgba(255,255,255,0.07)',
+    background: 'rgba(255,255,255,0.06)',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: '10px',
     color: '#fff',
-    padding: '13px 14px',
+    padding: '11px 13px',
     fontSize: '15px',
     outline: 'none',
     boxSizing: 'border-box',
+    marginBottom: '16px',
     fontFamily: 'inherit',
-    marginBottom: '6px',
   },
-  hint: { fontSize: '12px', color: '#475569', marginBottom: '20px', lineHeight: '1.5' },
-  infoBox: {
-    background: 'rgba(139,92,246,0.1)',
-    border: '1px solid rgba(139,92,246,0.25)',
-    borderRadius: '10px',
-    padding: '12px 14px',
-    fontSize: '13px',
-    color: '#c4b5fd',
-    lineHeight: '1.5',
-    marginBottom: '20px',
-  },
-  primaryBtn: {
+  primaryBtn: (disabled) => ({
     width: '100%',
-    padding: '14px',
-    background: '#8B5CF6',
+    padding: '12px',
+    background: disabled ? 'rgba(139,92,246,0.4)' : '#8B5CF6',
     border: 'none',
     borderRadius: '10px',
     color: '#fff',
     fontSize: '15px',
     fontWeight: 600,
-    cursor: 'pointer',
+    cursor: disabled ? 'default' : 'pointer',
     marginTop: '4px',
-    transition: 'opacity 0.2s',
-  },
-  secondaryBtn: {
-    width: '100%',
-    padding: '12px',
-    background: 'transparent',
-    border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: '10px',
-    color: '#94a3b8',
-    fontSize: '14px',
-    cursor: 'pointer',
-    marginTop: '10px',
-  },
+  }),
   error: {
-    marginTop: '12px',
-    padding: '10px 14px',
     background: 'rgba(239,68,68,0.12)',
     border: '1px solid rgba(239,68,68,0.25)',
     borderRadius: '8px',
-    fontSize: '13px',
     color: '#fca5a5',
-  },
-  toggle: {
-    marginTop: '24px',
-    textAlign: 'center',
     fontSize: '13px',
-    color: '#64748b',
+    padding: '10px 13px',
+    marginBottom: '14px',
   },
-  toggleLink: {
-    color: '#a78bfa',
+  stepIndicator: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '22px',
+  },
+  stepDot: (state) => ({
+    width: state === 'active' ? '28px' : '10px',
+    height: '10px',
+    borderRadius: '5px',
+    background: state === 'done' ? '#8B5CF6' : state === 'active' ? '#8B5CF6' : 'rgba(255,255,255,0.15)',
+    transition: 'all 0.3s',
+  }),
+  stepTitle: { fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: '#fff' },
+  methodGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '10px',
+    marginBottom: '16px',
+  },
+  methodBtn: (selected) => ({
+    padding: '14px 10px',
+    borderRadius: '10px',
+    border: selected ? '2px solid #8B5CF6' : '1px solid rgba(255,255,255,0.12)',
+    background: selected ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.04)',
+    color: selected ? '#c4b5fd' : '#A1A1AA',
     cursor: 'pointer',
-    fontWeight: 600,
-    textDecoration: 'underline',
-    marginLeft: '4px',
+    fontSize: '13px',
+    fontWeight: selected ? 600 : 400,
+    textAlign: 'center',
+  }),
+  digiBox: {
+    background: 'rgba(139,92,246,0.08)',
+    border: '1px solid rgba(139,92,246,0.25)',
+    borderRadius: '10px',
+    padding: '20px',
+    textAlign: 'center',
+    marginBottom: '16px',
   },
-  refreshBtn: {
+  digiIcon: { fontSize: '32px', marginBottom: '8px' },
+  digiStatus: { fontSize: '14px', color: '#c4b5fd', fontWeight: 500 },
+  idRow: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  idDisplay: {
+    flex: 1,
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: '10px',
+    color: '#a5b4fc',
+    padding: '11px 13px',
+    fontSize: '15px',
+    fontWeight: 600,
+    fontFamily: 'inherit',
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  regenBtn: {
+    padding: '11px 14px',
+    background: 'rgba(139,92,246,0.15)',
+    border: '1px solid rgba(139,92,246,0.3)',
+    borderRadius: '10px',
+    color: '#c4b5fd',
+    cursor: 'pointer',
+    fontSize: '13px',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+  },
+  mciStatus: (ok) => ({
+    fontSize: '12px',
+    color: ok ? '#86efac' : '#fca5a5',
+    marginTop: '-10px',
+    marginBottom: '14px',
+  }),
+  switchRow: {
+    textAlign: 'center',
+    marginTop: '18px',
+    fontSize: '13px',
+    color: '#A1A1AA',
+  },
+  switchLink: {
+    color: '#a5b4fc',
+    cursor: 'pointer',
+    fontWeight: 500,
+    textDecoration: 'underline',
     background: 'none',
     border: 'none',
-    color: '#a78bfa',
-    cursor: 'pointer',
-    fontSize: '12px',
-    padding: '4px 0',
-    textDecoration: 'underline',
+    fontSize: '13px',
+    padding: 0,
   },
 }
 
-const STEP_LABELS = [
-  'Enter your email',
-  'Verify your identity',
-  'Medical credentials',
-  'Set your credentials',
-]
+// ── StepIndicator ─────────────────────────────────────────────────────────────
 
-// ── component ─────────────────────────────────────────────────────────────────
+function StepIndicator({ step, total }) {
+  return (
+    <div style={S.stepIndicator}>
+      {Array.from({ length: total }).map((_, i) => {
+        const state = i < step ? 'done' : i === step ? 'active' : 'idle'
+        return <div key={i} style={S.stepDot(state)} />
+      })}
+    </div>
+  )
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+function Spinner() {
+  return (
+    <>
+      <style>{`@keyframes dl-spin { to { transform: rotate(360deg); } }`}</style>
+      <span style={{
+        display: 'inline-block',
+        width: '14px',
+        height: '14px',
+        border: '2px solid rgba(196,181,253,0.3)',
+        borderTop: '2px solid #c4b5fd',
+        borderRadius: '50%',
+        animation: 'dl-spin 0.8s linear infinite',
+        verticalAlign: 'middle',
+        marginRight: '7px',
+      }} />
+    </>
+  )
+}
+
+// ── DigiLocker simulator ───────────────────────────────────────────────────────
+
+function DigiLockerFlow({ onDone }) {
+  const [phase, setPhase] = useState('idle') // idle | redirecting | fetching | done
+
+  const start = () => {
+    setPhase('redirecting')
+    setTimeout(() => {
+      setPhase('fetching')
+      setTimeout(() => {
+        setPhase('done')
+        setTimeout(onDone, 500)
+      }, 1500)
+    }, 2000)
+  }
+
+  if (phase === 'idle') {
+    return (
+      <div style={S.digiBox}>
+        <div style={S.digiIcon}>🔗</div>
+        <div style={{ ...S.digiStatus, marginBottom: '12px', color: '#A1A1AA' }}>
+          Connect your DigiLocker to verify your Aadhaar digitally.
+        </div>
+        <button style={{ ...S.primaryBtn(false), width: 'auto', padding: '10px 24px' }} onClick={start}>
+          Connect DigiLocker
+        </button>
+      </div>
+    )
+  }
+  if (phase === 'redirecting') {
+    return (
+      <div style={S.digiBox}>
+        <div style={S.digiIcon}>🔄</div>
+        <div style={S.digiStatus}><Spinner />Redirecting to DigiLocker…</div>
+      </div>
+    )
+  }
+  if (phase === 'fetching') {
+    return (
+      <div style={S.digiBox}>
+        <div style={S.digiIcon}>📥</div>
+        <div style={S.digiStatus}><Spinner />Fetching your Aadhaar details…</div>
+      </div>
+    )
+  }
+  return (
+    <div style={{ ...S.digiBox, borderColor: 'rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.08)' }}>
+      <div style={S.digiIcon}>✅</div>
+      <div style={{ ...S.digiStatus, color: '#86efac' }}>DigiLocker verified!</div>
+    </div>
+  )
+}
+
+// ── Login form ─────────────────────────────────────────────────────────────────
+
+function LoginForm({ onSwitch }) {
+  const navigate = useNavigate()
+  const [doctorId, setDoctorId] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleLogin = () => {
+    const id = doctorId.trim().toUpperCase()
+    if (!id || !password) return setError('Please fill in all fields.')
+    setLoading(true)
+    setError('')
+
+    const db = getDoctorsDB()
+    const entry = db[id]
+    if (!entry) { setLoading(false); return setError('Doctor ID not found.') }
+    if (entry.password !== password) { setLoading(false); return setError('Incorrect password.') }
+
+    localStorage.setItem('currentDoctorId', id)
+    navigate('/doctor-dashboard')
+  }
+
+  return (
+    <>
+      {error && <div style={S.error}>{error}</div>}
+      <label style={S.label}>Doctor ID</label>
+      <input style={S.input} placeholder="DR-XXXXXX" value={doctorId}
+        onChange={(e) => setDoctorId(e.target.value)} />
+      <label style={S.label}>Password</label>
+      <input style={S.input} type="password" placeholder="Your password" value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+      <button style={S.primaryBtn(loading)} onClick={handleLogin} disabled={loading}>
+        {loading ? 'Signing in…' : 'Sign In'}
+      </button>
+      <div style={S.switchRow}>
+        New doctor? <button style={S.switchLink} onClick={onSwitch}>Register here</button>
+      </div>
+    </>
+  )
+}
+
+// ── Signup flow ────────────────────────────────────────────────────────────────
+
+function SignupFlow({ onSwitch }) {
+  const navigate = useNavigate()
+  const [step, setStep] = useState(0)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Step 0
+  const [name, setName] = useState('')
+  const [clinic, setClinic] = useState('')
+  const [email, setEmail] = useState('')
+
+  // Step 1
+  const [aadhaarMethod, setAadhaarMethod] = useState('digilocker')
+  const [aadhaar, setAadhaar] = useState('')
+
+  // Step 2
+  const [mci, setMci] = useState('')
+  const [mciVerified, setMciVerified] = useState(false)
+  const [mciChecking, setMciChecking] = useState(false)
+  const [mciError, setMciError] = useState('')
+
+  // Step 3
+  const [doctorId, setDoctorId] = useState(generateDoctorId)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+
+  const goNext = () => { setError(''); setStep((s) => s + 1) }
+
+  const handleStep0 = () => {
+    if (!name.trim()) return setError('Please enter your full name.')
+    if (!clinic.trim()) return setError('Please enter your clinic name.')
+    if (!email.includes('@')) return setError('Please enter a valid email.')
+    goNext()
+  }
+
+  const handleManualAadhaar = () => {
+    if (!/^\d{12}$/.test(aadhaar)) return setError('Aadhaar must be exactly 12 digits.')
+    goNext()
+  }
+
+  const handleMciChange = (val) => {
+    setMci(val)
+    setMciVerified(false)
+    setMciError('')
+  }
+
+  const verifyMci = () => {
+    if (!/^\d{5,7}$/.test(mci)) {
+      setMciError('MCI number must be 5–7 digits.')
+      return
+    }
+    setMciChecking(true)
+    setMciError('')
+    setTimeout(() => {
+      setMciChecking(false)
+      setMciVerified(true)
+      setTimeout(() => goNext(), 600)
+    }, 2000)
+  }
+
+  const handleFinish = async () => {
+    if (!password) return setError('Please set a password.')
+    if (password.length < 6) return setError('Password must be at least 6 characters.')
+    if (password !== confirm) return setError('Passwords do not match.')
+
+    setLoading(true)
+    setError('')
+
+    const { error: sbErr } = await supabase
+      .from('doctors')
+      .insert([{ id: doctorId, name: name.trim(), clinic: clinic.trim(), mci }])
+
+    if (sbErr && sbErr.code !== '23505') {
+      setLoading(false)
+      return setError(`Registration failed: ${sbErr.message}`)
+    }
+
+    const db = getDoctorsDB()
+    db[doctorId] = { password }
+    saveDoctorsDB(db)
+
+    localStorage.setItem('currentDoctorId', doctorId)
+    navigate('/doctor-dashboard')
+  }
+
+  return (
+    <>
+      <StepIndicator step={step} total={4} />
+      {error && <div style={S.error}>{error}</div>}
+
+      {step === 0 && (
+        <>
+          <div style={S.stepTitle}>Your details</div>
+          <label style={S.label}>Full Name</label>
+          <input style={S.input} placeholder="Dr. Jane Smith" value={name}
+            onChange={(e) => setName(e.target.value)} />
+          <label style={S.label}>Clinic / Hospital</label>
+          <input style={S.input} placeholder="City General Hospital" value={clinic}
+            onChange={(e) => setClinic(e.target.value)} />
+          <label style={S.label}>Email</label>
+          <input style={S.input} placeholder="doctor@hospital.com" value={email}
+            onChange={(e) => setEmail(e.target.value)} />
+          <button style={S.primaryBtn(false)} onClick={handleStep0}>Continue</button>
+        </>
+      )}
+
+      {step === 1 && (
+        <>
+          <div style={S.stepTitle}>Aadhaar Verification</div>
+          <div style={S.methodGrid}>
+            <button style={S.methodBtn(aadhaarMethod === 'digilocker')}
+              onClick={() => { setAadhaarMethod('digilocker'); setError('') }}>
+              🔗 DigiLocker
+            </button>
+            <button style={S.methodBtn(aadhaarMethod === 'manual')}
+              onClick={() => { setAadhaarMethod('manual'); setError('') }}>
+              🔢 Manual Entry
+            </button>
+          </div>
+          {aadhaarMethod === 'digilocker' ? (
+            <DigiLockerFlow onDone={() => goNext()} />
+          ) : (
+            <>
+              <label style={S.label}>Aadhaar Number</label>
+              <input style={S.input} placeholder="12-digit Aadhaar" maxLength={12}
+                value={aadhaar} onChange={(e) => setAadhaar(e.target.value.replace(/\D/g, ''))} />
+              <button style={S.primaryBtn(false)} onClick={handleManualAadhaar}>Verify & Continue</button>
+            </>
+          )}
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <div style={S.stepTitle}>MCI Registration</div>
+          <label style={S.label}>MCI Number (5–7 digits)</label>
+          <input style={S.input} placeholder="e.g. 123456" maxLength={7}
+            value={mci} onChange={(e) => handleMciChange(e.target.value.replace(/\D/g, ''))}
+            disabled={mciChecking || mciVerified} />
+          {mciError && <div style={S.mciStatus(false)}>{mciError}</div>}
+          {mciChecking && (
+            <div style={{ fontSize: '13px', color: '#c4b5fd', marginBottom: '14px' }}>
+              <Spinner />Verifying with MCI registry…
+            </div>
+          )}
+          {mciVerified && <div style={S.mciStatus(true)}>✓ MCI number verified</div>}
+          {!mciChecking && !mciVerified && (
+            <button style={S.primaryBtn(false)} onClick={verifyMci}>Verify MCI Number</button>
+          )}
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <div style={S.stepTitle}>Your Doctor ID & Password</div>
+          <label style={S.label}>Doctor ID</label>
+          <div style={S.idRow}>
+            <input style={S.idDisplay} value={doctorId}
+              onChange={(e) => setDoctorId(e.target.value.toUpperCase())} />
+            <button style={S.regenBtn} onClick={() => setDoctorId(generateDoctorId())}>New ID</button>
+          </div>
+          <label style={S.label}>Password</label>
+          <input style={S.input} type="password" placeholder="Min. 6 characters" value={password}
+            onChange={(e) => setPassword(e.target.value)} />
+          <label style={S.label}>Confirm Password</label>
+          <input style={S.input} type="password" placeholder="Repeat password" value={confirm}
+            onChange={(e) => setConfirm(e.target.value)} />
+          <button style={S.primaryBtn(loading)} onClick={handleFinish} disabled={loading}>
+            {loading ? 'Registering…' : 'Complete Registration'}
+          </button>
+        </>
+      )}
+
+      <div style={S.switchRow}>
+        Already registered? <button style={S.switchLink} onClick={onSwitch}>Sign in</button>
+      </div>
+    </>
+  )
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export default function DoctorLogin() {
   const navigate = useNavigate()
-
   const [mode, setMode] = useState('login')
-  const [step, setStep] = useState(1)
-
-  // login fields
-  const [loginId, setLoginId] = useState('')
-  const [loginPassword, setLoginPassword] = useState('')
-
-  // signup fields
-  const [email, setEmail] = useState('')
-  const [aadhaar, setAadhaar] = useState('')
-  const [mciNumber, setMciNumber] = useState('')
-  const [doctorId, setDoctorId] = useState(generateDoctorId)
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-
-  const [error, setError] = useState('')
-
-  const clearError = () => setError('')
-
-  // ── LOGIN ──────────────────────────────────────────────────────────────────
-
-  const handleLogin = () => {
-    const id = loginId.trim()
-    if (!id) return setError('Please enter your Doctor ID.')
-    if (!loginPassword) return setError('Please enter your password.')
-
-    const db = getDoctorsDB()
-    const doctor = db[id]
-    if (!doctor) return setError('Doctor ID not found. Please sign up first.')
-    if (doctor.password !== loginPassword) return setError('Incorrect password.')
-
-    localStorage.setItem('currentDoctorId', id)
-    navigate('/doctor-dashboard')
-  }
-
-  // ── SIGNUP steps ───────────────────────────────────────────────────────────
-
-  const handleStep1 = () => {
-    const e = email.trim()
-    if (!e) return setError('Please enter your email.')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return setError('Please enter a valid email address.')
-    clearError()
-    setStep(2)
-  }
-
-  const handleStep2 = () => {
-    const a = aadhaar.trim()
-    if (!a) return setError('Please enter your Aadhaar ID.')
-    if (!/^\d{12}$/.test(a)) return setError('Aadhaar must be exactly 12 digits (numbers only).')
-    clearError()
-    setStep(3)
-  }
-
-  const handleStep3 = () => {
-    const mci = mciNumber.trim().toUpperCase()
-    if (!mci) return setError('Please enter your MCI Registration Number.')
-    if (mci.length < 5 || mci.length > 10) return setError('MCI number must be between 5 and 10 characters.')
-    clearError()
-    setStep(4)
-  }
-
-  const handleStep4 = async () => {
-    const id = doctorId.trim().toUpperCase()
-    if (!id) return setError('Doctor ID cannot be empty.')
-    if (!/^[A-Z0-9\-]{4,12}$/.test(id)) return setError('Doctor ID must be 4–12 alphanumeric characters (hyphens allowed).')
-    if (!password) return setError('Please create a password.')
-    if (password.length < 6) return setError('Password must be at least 6 characters.')
-    if (password !== confirmPassword) return setError('Passwords do not match.')
-
-    const db = getDoctorsDB()
-    if (db[id]) return setError('This Doctor ID is already taken. Try a different one.')
-
-    const mci = mciNumber.trim().toUpperCase()
-    const entry = {
-      email: email.trim(),
-      aadhaar: aadhaar.trim(),
-      mciNumber: mci,
-      doctorId: id,
-      password,
-      name: '',
-      clinic: '',
-      uploads: [],
-      verified: false,
-      createdAt: new Date().toISOString(),
-    }
-
-    // Save to localStorage
-    db[id] = entry
-    saveDoctorsDB(db)
-
-    // Save to Supabase (non-blocking — don't fail signup if this errors)
-    const { error: sbErr } = await supabase
-      .from('doctors')
-      .insert({ id, name: entry.email, clinic: 'Clinic', mci: mci })
-    if (sbErr && sbErr.code !== '23505') console.warn('Supabase doctors insert failed:', sbErr.message)
-
-    localStorage.setItem('currentDoctorId', id)
-    navigate('/doctor-dashboard')
-  }
-
-  // ── reset ──────────────────────────────────────────────────────────────────
-
-  const switchMode = (m) => {
-    setMode(m)
-    setStep(1)
-    setError('')
-    setEmail('')
-    setAadhaar('')
-    setMciNumber('')
-    setDoctorId(generateDoctorId())
-    setPassword('')
-    setConfirmPassword('')
-    setLoginId('')
-    setLoginPassword('')
-  }
-
-  // ── sub-renders ────────────────────────────────────────────────────────────
-
-  const StepIndicator = () => (
-    <div style={S.stepRow}>
-      {[1, 2, 3, 4].map((n, i) => (
-        <div key={n} style={{ display: 'flex', alignItems: 'center', flex: i < 3 ? 1 : 'none' }}>
-          <div style={S.stepDot(step === n, step > n)}>
-            {step > n ? '✓' : n}
-          </div>
-          {i < 3 && <div style={S.stepLine(step > n)} />}
-        </div>
-      ))}
-    </div>
-  )
-
-  const renderLogin = () => (
-    <>
-      <label style={S.label}>Doctor ID</label>
-      <input
-        style={S.input}
-        placeholder="e.g. DR-X9B21V"
-        value={loginId}
-        onChange={(e) => { setLoginId(e.target.value); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-        autoFocus
-      />
-      <div style={S.hint}>Your unique ID was shown during signup.</div>
-
-      <label style={S.label}>Password</label>
-      <input
-        style={S.input}
-        type="password"
-        placeholder="Enter your password"
-        value={loginPassword}
-        onChange={(e) => { setLoginPassword(e.target.value); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-      />
-      <div style={{ marginBottom: '22px' }} />
-
-      <button style={S.primaryBtn} onClick={handleLogin}>Login</button>
-      {error && <div style={S.error}>{error}</div>}
-
-      <div style={S.toggle}>
-        New doctor?
-        <span style={S.toggleLink} onClick={() => switchMode('signup')}>Sign up</span>
-      </div>
-    </>
-  )
-
-  const renderStep1 = () => (
-    <>
-      <StepIndicator />
-      <label style={S.label}>Email Address</label>
-      <input
-        style={S.input}
-        type="email"
-        placeholder="doctor@hospital.com"
-        value={email}
-        onChange={(e) => { setEmail(e.target.value); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleStep1()}
-        autoFocus
-      />
-      <div style={S.hint}>Used to identify your account and receive notifications.</div>
-      <button style={S.primaryBtn} onClick={handleStep1}>Next →</button>
-      {error && <div style={S.error}>{error}</div>}
-    </>
-  )
-
-  const renderStep2 = () => (
-    <>
-      <StepIndicator />
-      <label style={S.label}>Aadhaar ID</label>
-      <input
-        style={S.input}
-        placeholder="12-digit Aadhaar number"
-        value={aadhaar}
-        maxLength={12}
-        onChange={(e) => { setAadhaar(e.target.value.replace(/\D/g, '')); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleStep2()}
-        autoFocus
-      />
-      <div style={S.hint}>Must be exactly 12 digits. Used for identity verification.</div>
-      <button style={S.primaryBtn} onClick={handleStep2}>Next →</button>
-      <button style={S.secondaryBtn} onClick={() => { setStep(1); clearError() }}>← Back</button>
-      {error && <div style={S.error}>{error}</div>}
-    </>
-  )
-
-  const renderStep3 = () => (
-    <>
-      <StepIndicator />
-      <label style={S.label}>MCI Registration Number</label>
-      <input
-        style={S.input}
-        placeholder="e.g. MH12345"
-        value={mciNumber}
-        maxLength={10}
-        onChange={(e) => { setMciNumber(e.target.value); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleStep3()}
-        autoFocus
-      />
-      <div style={S.hint}>Must be 5–10 characters. Issued by the Medical Council of India.</div>
-      <div style={S.infoBox}>
-        🔒 Your MCI number will be verified before your account is activated.
-      </div>
-      <button style={S.primaryBtn} onClick={handleStep3}>Next →</button>
-      <button style={S.secondaryBtn} onClick={() => { setStep(2); clearError() }}>← Back</button>
-      {error && <div style={S.error}>{error}</div>}
-    </>
-  )
-
-  const renderStep4 = () => (
-    <>
-      <StepIndicator />
-
-      <label style={S.label}>Your Doctor ID</label>
-      <input
-        style={{ ...S.input, fontFamily: 'monospace', letterSpacing: '2px', fontSize: '17px', fontWeight: 700, color: '#a78bfa' }}
-        value={doctorId}
-        onChange={(e) => { setDoctorId(e.target.value.toUpperCase()); clearError() }}
-        maxLength={12}
-      />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <span style={{ fontSize: '12px', color: '#475569' }}>You can edit this or keep the generated one.</span>
-        <button style={S.refreshBtn} onClick={() => { setDoctorId(generateDoctorId()); clearError() }}>
-          ↻ Regenerate
-        </button>
-      </div>
-
-      <label style={S.label}>Create Password</label>
-      <input
-        style={S.input}
-        type="password"
-        placeholder="Min. 6 characters"
-        value={password}
-        onChange={(e) => { setPassword(e.target.value); clearError() }}
-        autoFocus
-      />
-      <div style={{ marginBottom: '14px' }} />
-
-      <label style={S.label}>Confirm Password</label>
-      <input
-        style={S.input}
-        type="password"
-        placeholder="Re-enter password"
-        value={confirmPassword}
-        onChange={(e) => { setConfirmPassword(e.target.value); clearError() }}
-        onKeyDown={(e) => e.key === 'Enter' && handleStep4()}
-      />
-      <div style={{ marginBottom: '22px' }} />
-
-      <button style={S.primaryBtn} onClick={handleStep4}>Create Account</button>
-      <button style={S.secondaryBtn} onClick={() => { setStep(3); clearError() }}>← Back</button>
-      {error && <div style={S.error}>{error}</div>}
-    </>
-  )
-
-  // ── main render ────────────────────────────────────────────────────────────
 
   return (
     <div style={S.page}>
       <button style={S.backBtn} onClick={() => navigate('/')}>← Back</button>
-
-      <div style={S.icon}>👨‍⚕️</div>
-      <h1 style={S.title}>{mode === 'login' ? 'Doctor Login' : 'Doctor Sign Up'}</h1>
-      <p style={S.subtitle}>
-        {mode === 'login'
-          ? 'Access your doctor portal securely.'
-          : `Step ${step} of 4 — ${STEP_LABELS[step - 1]}`}
-      </p>
+      <div style={S.icon}>🩺</div>
+      <div style={S.title}>Doctor Portal</div>
+      <div style={S.subtitle}>MyReports — Secure Medical Records</div>
 
       <div style={S.card}>
-        {mode === 'login' && renderLogin()}
-        {mode === 'signup' && step === 1 && renderStep1()}
-        {mode === 'signup' && step === 2 && renderStep2()}
-        {mode === 'signup' && step === 3 && renderStep3()}
-        {mode === 'signup' && step === 4 && renderStep4()}
-
-        {mode === 'signup' && (
-          <div style={S.toggle}>
-            Already have an account?
-            <span style={S.toggleLink} onClick={() => switchMode('login')}>Login</span>
-          </div>
-        )}
+        <div style={S.tabs}>
+          <button style={S.tab(mode === 'login')} onClick={() => setMode('login')}>Sign In</button>
+          <button style={S.tab(mode === 'signup')} onClick={() => setMode('signup')}>Register</button>
+        </div>
+        {mode === 'login'
+          ? <LoginForm onSwitch={() => setMode('signup')} />
+          : <SignupFlow onSwitch={() => setMode('login')} />
+        }
       </div>
     </div>
   )
